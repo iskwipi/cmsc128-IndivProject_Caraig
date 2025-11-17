@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="account-container">
+        <div class="account-card">
+            <div class="account-header">
+                <h1 id="greeting">Hello, User!</h1>
+            </div>
+            <div class="profile-section">
+                <div class="profile-photo">
+                    <img src="https://cdna.artstation.com/p/assets/images/images/084/124/296/large/matthew-blank-profile-photo-1.jpg?1737590038" alt="Profile Photo" id="profilePhoto">
+                </div>
+                <div class="profile-info">
+                    <div class="info-item">
+                        <label>Display Name</label>
+                        <span id="displayUsername">Loading...</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Email</label>
+                        <span id="displayEmail">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="account-actions">
+                <button class="action-btn" onclick="showChangeNameForm()">
+                    <span class="action-text">
+                        <strong>Change Name</strong>
+                        <small>Update your display name</small>
+                    </span>
+                </button>
+                <button class="action-btn" onclick="showPasswordChangeForm()">
+                    <span class="action-text">
+                        <strong>Change Password</strong>
+                        <small>Update your account password</small>
+                    </span>
+                </button>
+                <button class="action-btn"  id="logoutBtn">
+                    <span class="action-text">
+                        <strong>Log out of Account</strong>
+                        <small>Signs out of current account</small>
+                    </span>
+                </button>
+                <button class="action-btn" onclick="showDeleteAccountConfirm()">
+                    <span class="action-text">
+                        <strong>Delete Account</strong>
+                        <small>Permanently delete your account</small>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="changeNameDialog" class="dialog-overlay">
+        <div class="dialog">
+            <h2>Change Name</h2>
+            <p class="dialog-subtitle">Update your display name</p>
+            <form id="changeNameForm" class="auth-form">
+                <div class="form-group">
+                    <label for="newUsername">Display Name</label>
+                    <input type="text" id="newUsername" required placeholder="Choose a display name">
+                </div>
+                <div class="dialog-actions">
+                    <button type="button" class="btn-secondary" onclick="closeChangeNameForm()">Cancel</button>
+                    <button type="submit" class="btn-primary">Update Name</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="passwordChangeFormDialog" class="dialog-overlay">
+        <div class="dialog">
+            <h2>Change Password</h2>
+            <p class="dialog-subtitle">Enter your current password and new password</p>
+            <form id="passwordChangeForm" class="auth-form">
+                <div class="form-group">
+                    <label for="currentPassword">Current Password</label>
+                    <input type="password" id="currentPassword" required placeholder="Enter current password">
+                </div>
+                <div class="form-group">
+                    <label for="newPasswordChange">New Password</label>
+                    <input type="password" id="newPasswordChange" required minlength="6" placeholder="Enter new password">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPasswordChange">Confirm New Password</label>
+                    <input type="password" id="confirmPasswordChange" required placeholder="Confirm new password">
+                </div>
+                <div class="dialog-actions">
+                    <button type="button" class="btn-secondary" onclick="closePasswordChangeForm()">Cancel</button>
+                    <button type="submit" class="btn-primary">Change Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="deleteAccountDialog" class="dialog-overlay">
+        <div class="dialog">
+            <h2>Delete Account</h2>
+            <p class="dialog-subtitle">This action cannot be undone. All your data will be permanently deleted.</p>
+            <form id="deleteAccountForm" class="auth-form">
+                <div class="form-group">
+                    <label for="deletePassword">Password</label>
+                    <input type="password" id="deletePassword" required placeholder="Enter your password to confirm">
+                </div>
+                <div class="dialog-actions">
+                    <button type="button" class="btn-secondary" onclick="closeDeleteAccountForm()">Cancel</button>
+                    <button type="submit" class="btn-primary">Delete Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="confirmDialog" class="dialog-overlay">
+        <div class="dialog">
+            <h2>Confirm Logout</h2>
+            <p>Are you sure you want to logout?</p>
+            <div class="dialog-actions">
+                <button id="cancelLogout" class="btn-secondary">Cancel</button>
+                <button id="confirmLogout" class="btn-primary">Yes, Logout</button>
+            </div>
+        </div>
+    </div>
+    <div id="toast" class="toast">
+        <span id="toastMessage"></span>
+    </div>
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="utils.js"></script>
+    <script type="module" src="account.js"></script>
+</body>
+</html>

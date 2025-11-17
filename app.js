@@ -1,7 +1,7 @@
-// firebase configurations and initialization
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"
+// Firebase configuration
+import { db } from "./firebase-config.js"
+import { showToast, hideToast, formatDateTime, formatDate, escapeHtml } from "./utils.js"
 import {
-  getFirestore,
   collection,
   addDoc,
   getDocs,
@@ -12,21 +12,14 @@ import {
   query,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
 
-const firebaseConfig = {
-  // insert firebase config here
-};
-
-const app = initializeApp(firebaseConfig)
-const db = getFirestore(app)
-
-// temporary storage
+// Global variables
 let tasks = []
 let currentSort = "dateAdded"
 let deletedTask = null
 let editingTaskId = null
 let taskToDelete = null
 
-// get elements for manipulation
+// DOM elements
 const taskForm = document.getElementById("taskForm")
 const tasksList = document.getElementById("tasksList")
 const emptyState = document.getElementById("emptyState")
@@ -38,17 +31,16 @@ const confirmDialog = document.getElementById("confirmDialog")
 const editDialog = document.getElementById("editDialog")
 const editTaskForm = document.getElementById("editTaskForm")
 
-// activate functions after loading elements
+// Initialize app
 document.addEventListener("DOMContentLoaded", () => {
   loadTasks()
   setupEventListeners()
 })
 
-// assign functions to buttons and forms
+// Setup event listeners
 function setupEventListeners() {
   taskForm.addEventListener("submit", handleAddTask)
   editTaskForm.addEventListener("submit", handleEditTask)
-
   sortButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       currentSort = btn.dataset.sort
@@ -57,28 +49,23 @@ function setupEventListeners() {
       renderTasks()
     })
   })
-
   undoBtn.addEventListener("click", handleUndo)
-
   document.getElementById("cancelDelete").addEventListener("click", () => {
     confirmDialog.classList.remove("show")
     taskToDelete = null
   })
-
   document.getElementById("confirmDelete").addEventListener("click", handleConfirmDelete)
-
   document.getElementById("cancelEdit").addEventListener("click", () => {
     editDialog.classList.remove("show")
     editingTaskId = null
   })
 }
 
-// get tasks from firestore
+// Load tasks from Firestore
 async function loadTasks() {
   try {
     const q = query(collection(db, "tasks"))
     const querySnapshot = await getDocs(q)
-
     tasks = []
     querySnapshot.forEach((doc) => {
       tasks.push({
@@ -86,7 +73,6 @@ async function loadTasks() {
         ...doc.data(),
       })
     })
-
     renderTasks()
   } catch (error) {
     console.error("Error loading tasks:", error)
@@ -94,17 +80,14 @@ async function loadTasks() {
   }
 }
 
-// upload new task to firestore
+// Add new task
 async function handleAddTask(e) {
   e.preventDefault()
-
   const title = document.getElementById("taskTitle").value
   const date = document.getElementById("taskDate").value
   const time = document.getElementById("taskTime").value
   const priority = document.getElementById("taskPriority").value
-
   const dueDateTime = `${date} ${time}`
-
   try {
     const docRef = await addDoc(collection(db, "tasks"), {
       title,
@@ -113,7 +96,6 @@ async function handleAddTask(e) {
       completed: false,
       createdAt: serverTimestamp(),
     })
-
     tasks.push({
       id: docRef.id,
       title,
@@ -122,7 +104,6 @@ async function handleAddTask(e) {
       completed: false,
       createdAt: new Date(),
     })
-
     taskForm.reset()
     renderTasks()
     showToast("Task added successfully!")
@@ -132,17 +113,15 @@ async function handleAddTask(e) {
   }
 }
 
-// modify completion status of task
+// Toggle task completion
 async function toggleTaskComplete(taskId) {
   const task = tasks.find((t) => t.id === taskId)
   if (!task) return
-
   try {
     const taskRef = doc(db, "tasks", taskId)
     await updateDoc(taskRef, {
       completed: !task.completed,
     })
-
     task.completed = !task.completed
     renderTasks()
   } catch (error) {
@@ -151,25 +130,21 @@ async function toggleTaskComplete(taskId) {
   }
 }
 
-// delete pop-up
+// Show delete confirmation
 function showDeleteConfirmation(taskId) {
   taskToDelete = taskId
   confirmDialog.classList.add("show")
 }
 
-// delete task from firestore but save temporarily
+// Handle confirmed delete
 async function handleConfirmDelete() {
   if (!taskToDelete) return
-
   const task = tasks.find((t) => t.id === taskToDelete)
   if (!task) return
-
   try {
     await deleteDoc(doc(db, "tasks", taskToDelete))
-
     deletedTask = { ...task }
     tasks = tasks.filter((t) => t.id !== taskToDelete)
-
     confirmDialog.classList.remove("show")
     renderTasks()
     showToast("Task deleted", true)
@@ -180,10 +155,9 @@ async function handleConfirmDelete() {
   }
 }
 
-// restore deleted task
+// Undo delete
 async function handleUndo() {
   if (!deletedTask) return
-
   try {
     const docRef = await addDoc(collection(db, "tasks"), {
       title: deletedTask.title,
@@ -192,12 +166,10 @@ async function handleUndo() {
       completed: deletedTask.completed,
       createdAt: deletedTask.createdAt,
     })
-
     tasks.push({
       ...deletedTask,
       id: docRef.id,
     })
-
     deletedTask = null
     hideToast()
     renderTasks()
@@ -207,35 +179,28 @@ async function handleUndo() {
   }
 }
 
-// edit pop-up
+// Show edit dialog
 function showEditDialog(taskId) {
   const task = tasks.find((t) => t.id === taskId)
   if (!task) return
-
   editingTaskId = taskId
-
   const [date, time] = task.dueDateTime.split(" ")
   document.getElementById("editTaskTitle").value = task.title
   document.getElementById("editTaskDate").value = date
   document.getElementById("editTaskTime").value = time
   document.getElementById("editTaskPriority").value = task.priority
-
   editDialog.classList.add("show")
 }
 
-// apply changes to task
+// Handle edit task
 async function handleEditTask(e) {
   e.preventDefault()
-
   if (!editingTaskId) return
-
   const title = document.getElementById("editTaskTitle").value
   const date = document.getElementById("editTaskDate").value
   const time = document.getElementById("editTaskTime").value
   const priority = document.getElementById("editTaskPriority").value
-
   const dueDateTime = `${date} ${time}`
-
   try {
     const taskRef = doc(db, "tasks", editingTaskId)
     await updateDoc(taskRef, {
@@ -243,14 +208,12 @@ async function handleEditTask(e) {
       dueDateTime,
       priority,
     })
-
     const task = tasks.find((t) => t.id === editingTaskId)
     if (task) {
       task.title = title
       task.dueDateTime = dueDateTime
       task.priority = priority
     }
-
     editDialog.classList.remove("show")
     editingTaskId = null
     renderTasks()
@@ -261,10 +224,9 @@ async function handleEditTask(e) {
   }
 }
 
-// sort tasks by date added, due date, or priority
+// Sort tasks
 function sortTasks(tasksToSort) {
   const sorted = [...tasksToSort]
-
   switch (currentSort) {
     case "dateAdded":
       sorted.sort((a, b) => {
@@ -285,23 +247,19 @@ function sortTasks(tasksToSort) {
       })
       break
   }
-
   return sorted
 }
 
-// format and display tasks
+// Render tasks
 function renderTasks() {
   if (tasks.length === 0) {
     tasksList.style.display = "none"
     emptyState.style.display = "block"
     return
   }
-
   tasksList.style.display = "flex"
   emptyState.style.display = "none"
-
   const sortedTasks = sortTasks(tasks)
-
   tasksList.innerHTML = sortedTasks
     .map(
       (task) => `
@@ -315,11 +273,10 @@ function renderTasks() {
             <div class="task-content">
                 <div class="task-header">
                     <span class="task-title"><div>${task.title}</div></span>
-                    <span class="priority-badge priority-${task.priority.toLowerCase()}">${task.priority}</span>
                 </div>
                 <div class="task-meta">
+                    <span class="priority-badge priority-${task.priority.toLowerCase()}">Priority: ${task.priority}</span>
                     <span>Due: ${formatDateTime(task.dueDateTime)}</span>
-                    <span>Added: ${formatDate(task.createdAt)}</span>
                 </div>
             </div>
             <div class="task-actions">
@@ -336,44 +293,7 @@ function renderTasks() {
     .join("")
 }
 
-// other miscellaneous functions
-function formatDateTime(dateTimeString) {
-  const date = new Date(dateTimeString)
-  return date.toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  })
-}
-
-function formatDate(timestamp) {
-  if (!timestamp) return "Just now"
-
-  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  })
-}
-
-function showToast(message, showUndo = false) {
-  toastMessage.textContent = message
-  undoBtn.style.display = showUndo ? "block" : "none"
-  toast.classList.add("show")
-
-  setTimeout(() => {
-    hideToast()
-  }, 5000)
-}
-
-function hideToast() {
-  toast.classList.remove("show")
-  deletedTask = null
-}
-
+// Make functions globally accessible
 window.toggleTaskComplete = toggleTaskComplete
 window.showDeleteConfirmation = showDeleteConfirmation
 window.showEditDialog = showEditDialog

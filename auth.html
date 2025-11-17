@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div id="loginView" class="auth-view active">
+            <div class="auth-card">
+                <h1>My To Do List</h1>
+                <p class="subtitle">Sign in to your account</p>
+                <form id="loginForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" required placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" required placeholder="Enter your password">
+                    </div>
+                    <button type="submit" class="btn-primary">Sign In</button>
+                </form>
+                <div class="auth-links">
+                    <a href="#" onclick="showView('emailRecoveryView')">Forgot Password?</a>
+                    <span>Don't have an account? <a href="#" onclick="showView('registerView')">Sign Up</a></span>
+                </div>
+            </div>
+        </div>
+        <div id="registerView" class="auth-view">
+            <div class="auth-card">
+                <h1>Create Account</h1>
+                <p class="subtitle">Sign up to get started</p>
+                <form id="registerForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="registerUsername">Display Name</label>
+                        <input type="text" id="registerUsername" required placeholder="Choose a display name">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail">Email</label>
+                        <input type="email" id="registerEmail" required placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Password</label>
+                        <input type="password" id="registerPassword" required minlength="6" placeholder="Create a password (min 6 characters)">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerConfirmPassword">Confirm Password</label>
+                        <input type="password" id="registerConfirmPassword" required placeholder="Confirm your password">
+                    </div>
+                    <button type="submit" class="btn-primary">Create Account</button>
+                </form>
+                <div class="auth-links">
+                    <span>Already have an account? <a href="#" onclick="showView('loginView')">Sign In</a></span>
+                </div>
+            </div>
+        </div>
+        <div id="emailRecoveryView" class="auth-view">
+            <div class="auth-card">
+                <h1>Reset Password</h1>
+                <p class="subtitle">Enter your email to receive a reset link</p>
+                <form id="emailRecoveryForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="recoveryEmail">Email</label>
+                        <input type="email" id="recoveryEmail" required placeholder="Enter your email">
+                    </div>
+                    <button type="submit" class="btn-primary">Send Reset Link</button>
+                </form>
+                <div class="auth-links">
+                    <a href="#" onclick="showView('loginView')">Back to Sign In</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="toast" class="toast">
+        <span id="toastMessage"></span>
+    </div>
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="utils.js"></script>
+    <script type="module" src="auth.js"></script>
+</body>
+</html>

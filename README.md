@@ -1,14 +1,14 @@
 # To Do List
 
-A simple To Do List web app using HTML-CSS-JS and Firebase Firestore
+A simple To Do List web app using HTML-CSS-JS and Firebase
 
 ## Backend
 
-This web app utilizes Javascript connected to Firebase Firestore as a backend. This means that all data will be saved into a database in the cloud, and an internet service is required to interact with the application.
+This web app utilizes Javascript connected to Firebase as a backend. This means that all data will be saved into a database in the cloud, and an internet service is required to interact with the application.
 
 ## Usage
 
-To use the web app, you must first create a Firebase project and set up a Firestore database through [this website](https://console.firebase.google.com/). You must then get the project configuration details and replace the placeholders in the `app.js` file.
+To use the web app, you must first create a Firebase project and set up a Firestore database through [this website](https://console.firebase.google.com/). You must then get the project configuration details and replace the placeholders in the `firebase-config.js` file.
 
 ```
 const firebaseConfig = {
