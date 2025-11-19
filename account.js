@@ -8,8 +8,19 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider,
   deleteUser,
+  updateProfile,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"
-import { doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  deleteDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  writeBatch,
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
 
 // Global variables
 let currentUser = null
@@ -44,16 +55,10 @@ function checkAuthState() {
 // Load user profile
 async function loadUserProfile() {
   try {
-    // Load user data from Firestore
-    const userDoc = await getDoc(doc(db, "users", currentUser.uid))
-    if (userDoc.exists()) {
-      const userData = userDoc.data()
-      if (userData.username && userData.email) {
-        document.getElementById("greeting").textContent = `Hello, ${userData.username}!`
-        document.getElementById("displayUsername").textContent = userData.username
-        document.getElementById("displayEmail").textContent = userData.email
-      }
-    }
+    // Load user data
+    document.getElementById("greeting").textContent = `Hello, ${currentUser.displayName}!`
+    document.getElementById("displayUsername").textContent = currentUser.displayName
+    document.getElementById("displayEmail").textContent = currentUser.email
   } catch (error) {
     console.error("Error loading profile:", error)
     showToast("Error loading profile data")
@@ -72,6 +77,7 @@ function setupEventListeners() {
   document.getElementById("passwordChangeForm").addEventListener("submit", handlePasswordChange)
   document.getElementById("changeNameForm").addEventListener("submit", handleChangeName)
   document.getElementById("deleteAccountForm").addEventListener("submit", handleDeleteAccount)
+  document.getElementById("exitBtn").addEventListener("click", handleExit)
 }
 
 // Handle logout
@@ -168,6 +174,9 @@ async function handleChangeName(e) {
     // Update Auth profile display name
     await updatePassword(currentUser, currentUser.password)
     // Reload profile to reflect changes
+    await updateProfile(currentUser, { 
+        displayName: newName 
+    });
     await currentUser.reload()
     loadUserProfile()
     showToast("Name updated successfully!")
@@ -202,6 +211,38 @@ async function handleDeleteAccount(e) {
     await reauthenticateWithCredential(currentUser, credential)
     // Delete user data from Firestore
     await deleteDoc(doc(db, "users", currentUser.uid))
+
+    // Delete collab data
+    const collabsRef = collection(db, "collaborators");
+    const q = query(collabsRef, where("userId", "==", currentUser.uid));
+    const snapshot = await getDocs(q);
+    const batch = writeBatch(db);
+    snapshot.forEach((doc) => {
+        batch.delete(doc.ref);
+    });
+    await batch.commit();
+
+    // Delete user data
+    const listsRef = collection(db, "lists");
+    const listsQuery = query(listsRef, where("ownerId", "==", currentUser.uid));
+    const listsSnapshot = await getDocs(listsQuery);
+    const listsToDelete = listsSnapshot.docs.map(doc => ({ id: doc.id, ref: doc.ref }));
+    const listIdsToDelete = listsToDelete.map(list => list.id);
+    
+    const listsBatch = writeBatch(db);
+    listsToDelete.forEach(list => listsBatch.delete(list.ref));
+    
+    const collabQuery = query(collabsRef, where("listId", "in", listIdsToDelete)); 
+    const collabSnapshot = await getDocs(collabQuery);
+    collabSnapshot.forEach(doc => listsBatch.delete(doc.ref));
+    
+    const tasksRef = collection(db, "tasks");
+    const tasksQuery = query(tasksRef, where("listId", "in", listIdsToDelete));
+    const tasksSnapshot = await getDocs(tasksQuery);
+    tasksSnapshot.forEach(doc => listsBatch.delete(doc.ref));
+
+    await listsBatch.commit();
+
     // Delete user from Auth
     await deleteUser(currentUser)
     showToast("Account deleted successfully!")
@@ -223,6 +264,16 @@ async function handleDeleteAccount(e) {
   }
 }
 
+// Handle back to home page
+async function handleExit() {
+  try {
+    window.location.href = "index.html"
+  } catch (error) {
+    console.error("Home page error:", error)
+    showToast("Error accessing home page. Please try again.")
+  }
+}
+
 // Make functions globally accessible
 window.showPasswordChangeForm = showPasswordChangeForm
 window.closePasswordChangeForm = closePasswordChangeForm
@@ -230,3 +281,4 @@ window.showChangeNameForm = showChangeNameForm
 window.closeChangeNameForm = closeChangeNameForm
 window.showDeleteAccountConfirm = showDeleteAccountConfirm
 window.closeDeleteAccountForm = closeDeleteAccountForm
+window.handleExit = handleExit

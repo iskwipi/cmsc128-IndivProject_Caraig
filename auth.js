@@ -8,7 +8,7 @@ import {
   sendEmailVerification,
   updateProfile,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"
-import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
 
 // Global variables
 let currentView = "loginView"
@@ -48,7 +48,7 @@ async function handleLogin(e) {
     }
     showToast("Login successful! Redirecting...")
     setTimeout(() => {
-      window.location.href = "account.html"
+      window.location.href = "index.html"
     }, 1500)
   } catch (error) {
     console.error("Login error:", error)
@@ -100,7 +100,14 @@ async function handleRegister(e) {
     await setDoc(doc(db, "users", userCredential.user.uid), {
       username: username,
       email: email,
-      createdAt: new Date(),
+      createdAt: serverTimestamp(),
+    })
+    const personalListId = `personal-${userCredential.user.uid}`
+    await setDoc(doc(db, "lists", personalListId), {
+      name: "My Tasks",
+      ownerId: userCredential.user.uid,
+      type: "personal",
+      createdAt: serverTimestamp(),
     })
     await sendEmailVerification(userCredential.user)
     showToast("Account created! Please check your email to verify your account.")
