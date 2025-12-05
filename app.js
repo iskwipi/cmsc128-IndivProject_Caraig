@@ -55,8 +55,15 @@ document.addEventListener("DOMContentLoaded", () => {
 function checkAuthState() {
   onAuthStateChanged(auth, (user) => {
     if (user) {
+      if (!user.emailVerified) {
+        showToast("Please verify your email before accessing your account.")
+        signOut(auth)
+        setTimeout(() => {
+          window.location.href = "auth.html"
+        }, 2000)
+        return
+      }
       currentUser = user
-      console.log(currentUser)
       document.getElementById("greeting").textContent = `Hello, ${currentUser.displayName}!`
       loadLists()
       setupEventListeners()
@@ -545,7 +552,6 @@ async function showEditCollaboratorsDialog() {
     .join("")
 
   document.getElementById("editCollaboratorsList").innerHTML = collaboratorsListHtml
-  console.log(collaborators)
   editCollaboratorsList.style.display = collaborators.length === 0 ? "none" : "block"
   editCollaboratorsDialog.classList.add("show")
   closeCollaboratorsDialog()
@@ -569,8 +575,6 @@ async function handleAddCollaborator(e) {
 
   try {
     const userDoc = await findUserByEmail(email)
-    console.log(currentUser)
-    console.log(userDoc)
     if (!userDoc) {
       showToast("User not found with that email")
       return

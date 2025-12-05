@@ -2,6 +2,7 @@
 import { auth, db } from "./firebase-config.js"
 import { showToast } from "./utils.js"
 import {
+  onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
@@ -15,8 +16,18 @@ let currentView = "loginView"
 
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
+  checkAuthState()
   setupEventListeners()
 })
+
+// Check authentication state
+function checkAuthState() {
+  onAuthStateChanged(auth, (user) => {
+    if (user && user.emailVerified) {
+      window.location.href = "index.html"
+    }
+  })
+}
 
 // Setup event listeners
 function setupEventListeners() {
